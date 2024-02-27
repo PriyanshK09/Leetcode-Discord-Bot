@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import requests
 from bs4 import BeautifulSoup
+import os
 
 intents = discord.Intents.default()
 intents.typing = False
@@ -15,35 +16,45 @@ async def on_ready():
     print('Bot is ready!')
 
 @bot.command()
-async def leetcode(ctx, *, problem_name):
+async def leetcode(ctx, *, problem_name_lang):
     try:
+        problem_name, lang = problem_name_lang.split()
+        lang = lang.lower()
         # Create a session to maintain cookies
         session = requests.Session()
 
         # Fetch the LeetCode problem and its solution
-        url = f'https://leetcode.com/problems/{problem_name}/description/?envType=daily-question&envId=2024-02-27'
+        url = f'https://leetcode.com/problems/{problem_name}/description/'
         print(f"Fetching URL: {url}")
         response = session.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
-        problem_title_element = soup.find('h4', class_='content__title')
+        problem_title_element = soup.find('title')
         if problem_title_element is None:
             raise Exception(f"Problem '{problem_name}' not found")
 
-        problem_title = problem_title_element.text
-        problem_solution_element = soup.find('div', class_='content__u3I1 question-content__JfgR').find('div')
-        if problem_solution_element is None:
-            raise Exception("Solution not found")
-        problem_solution = problem_solution_element.text
+        problem_title = problem_title_element.text.strip()
+        problem_description_element = soup.find('meta', attrs={'name': 'description'})
+        if problem_description_element is None:
+            raise Exception("Description not found")
+        problem_description = problem_description_element['content']
 
-        # Send the solution to a certain channel
-        channel_id = 1101818536646688799
-        channel = bot.get_channel(channel_id)
-        await channel.send(f"{problem_title}\n\nSolution for {problem_title}:\n{problem_solution}")
+        # Create an embed for the question
+        embed = discord.Embed(title=problem_title, description=problem_description, color=0x00ff00)
+        await ctx.send(embed=embed)
 
-        # Ping a certain role
-        role_id = 1211196331419246622
-        role = ctx.guild.get_role(role_id)
-        await ctx.send(f"Solution sent to {channel.mention}! {role.mention}")
+        # Find the solution file in the bot's directory
+        solution_folder = os.path.join(os.getcwd(), 'solutions')
+        if not os.path.exists(solution_folder):
+            os.makedirs(solution_folder)
+        solution_file = os.path.join(solution_folder, f'{problem_name}.{lang}')
+
+        # Read the solution from the file
+        with open(solution_file, 'r') as f:
+            problem_solution = f.read()
+
+        # Send the solution in an embed
+        embed_solution = discord.Embed(title=f"Solution for {problem_title}", description=problem_solution, color=0x00ff00)
+        await ctx.send(embed=embed_solution)
 
     except Exception as e:
         print(f"An error occurred: {e}")
