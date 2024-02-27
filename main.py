@@ -21,7 +21,7 @@ async def leetcode(ctx, *, problem_name):
         session = requests.Session()
 
         # Fetch the LeetCode problem and its solution
-        url = f'https://leetcode.com/problems/{problem_name}/description/'
+        url = f'https://leetcode.com/problems/{problem_name}/description/?envType=daily-question&envId=2024-02-27'
         print(f"Fetching URL: {url}")
         response = session.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -50,4 +50,4 @@ async def leetcode(ctx, *, problem_name):
         await ctx.send(f"An error occurred: {e}")
 
 
-bot.run('MTIxMTUzNzQzMDg0NzU1MzYxNg.GKR0CV.CtxJaYZdPjYkFKPtkrXcZ38m5kKSu5RhVtDZ1U')
+bot.run('TOKEN')
