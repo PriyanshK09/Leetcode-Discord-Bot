@@ -50,7 +50,7 @@ async def leetcode(ctx, *, problem_name_lang):
 
         # Read the solution from the file
         with open(solution_file, 'r') as f:
-            problem_solution = f.read()
+            problem_solution = f'```{lang}\n{f.read()}\n```'
 
         # Send the solution in an embed
         embed_solution = discord.Embed(title=f"Solution for {problem_title}", description=problem_solution, color=0x00ff00)
@@ -59,6 +59,7 @@ async def leetcode(ctx, *, problem_name_lang):
     except Exception as e:
         print(f"An error occurred: {e}")
         await ctx.send(f"An error occurred: {e}")
+
 
 
 bot.run('TOKEN')
